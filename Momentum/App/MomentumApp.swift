@@ -10,6 +10,7 @@ import SwiftData
 
 @main
 struct MomentumApp: App {
+    #if false
     var sharedModelContainer: ModelContainer = {
         let schema = Schema([
             Item.self,
@@ -22,11 +23,12 @@ struct MomentumApp: App {
             fatalError("Could not create ModelContainer: \(error)")
         }
     }()
-
+    #endif
+    
     var body: some Scene {
         WindowGroup {
-            ContentView()
+            HabitListView()
         }
-        .modelContainer(sharedModelContainer)
+        .modelContainer(for: [Habit.self, HabitCompletion.self])
     }
 }
