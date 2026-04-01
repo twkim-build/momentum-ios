@@ -17,12 +17,16 @@ struct HabitListView: View {
         NavigationStack {
             List {
                 ForEach(habits) { habit in
-                    VStack(alignment: .leading, spacing: 4) {
-                        Text(habit.name)
-                            .font(.headline)
-                        Text(habit.category)
-                            .font(.subheadline)
-                            .foregroundStyle(.secondary)
+                    NavigationLink {
+                        HabitDetailView(habit: habit)
+                    } label: {
+                        VStack(alignment: .leading, spacing: 4) {
+                            Text(habit.name)
+                                .font(.headline)
+                            Text(habit.category)
+                                .font(.subheadline)
+                                .foregroundStyle(.secondary)
+                        }
                     }
                 }
                 .onDelete(perform: deleteHabits)
