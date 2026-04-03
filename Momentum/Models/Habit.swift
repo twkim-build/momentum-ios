@@ -10,7 +10,7 @@ import SwiftData
 
 @Model
 final class Habit {
-    var id: UUID
+    var id: UUID = UUID()
     var name: String
     var category: String
     var createdAt: Date
@@ -19,8 +19,7 @@ final class Habit {
     @Relationship(deleteRule: .cascade, inverse: \HabitCompletion.habit)
     var completions: [HabitCompletion] = []
     
-    init(id: UUID, name: String, category: String, createdAt: Date, frequency: String) {
-        self.id = id
+    init(name: String, category: String, createdAt: Date, frequency: String) {
         self.name = name
         self.category = category
         self.createdAt = createdAt
@@ -28,6 +27,6 @@ final class Habit {
     }
     
     convenience init(name: String, category: String, frequency: String) {
-        self.init(id: UUID(), name: name, category: category, createdAt: Date(), frequency: frequency)
+        self.init(name: name, category: category, createdAt: Date(), frequency: frequency)
     }
 }
