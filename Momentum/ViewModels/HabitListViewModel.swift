@@ -1,0 +1,51 @@
+//
+//  HabitListViewModel.swift
+//  Momentum
+//
+//  Created by taewoo kim on 05.04.26.
+//
+
+import Foundation
+import Observation
+
+enum HabitFilter: Equatable {
+    case all
+    case category(String)
+}
+
+@Observable
+final class HabitListViewModel {
+    private let repository: HabitRepositoryProtocol
+    
+    private(set) var habits: [Habit] = []
+    private(set) var isLoading = false
+    private(set) var errorMessage: String?
+    var selectedFilter: HabitFilter = .all
+    
+    init(repository: HabitRepositoryProtocol) {
+        self.repository = repository
+    }
+    
+    func filterHabits() -> [Habit] {
+        switch selectedFilter {
+        case .all:
+            return habits
+        case .category(let category):
+            return habits.filter{ $0.category == category }
+        }
+    }
+
+    func loadHabits() async {
+        isLoading = true
+        errorMessage = nil
+        
+        do {
+            habits = try await repository.fetchHabits()
+        } catch {
+            habits = []
+            errorMessage = "Failed to load habits."
+        }
+        
+        isLoading = false
+    }
+}
