@@ -10,12 +10,14 @@ import SwiftData
 
 struct AddHabitView: View {
     @Environment(\.dismiss) private var dismiss
-    @Environment(\.modelContext) private var modelContext
+    
+    let viewModel: HabitListViewModel
     
     @State private var name = ""
     @State private var category = ""
     @State private var frequency = "Daily"
-    
+    @State private var isSaving = false
+
     let frequencyOptions: [String] = ["Daily", "Weekdays", "Weekly"]
     
     var body: some View {
@@ -31,6 +33,13 @@ struct AddHabitView: View {
                         }
                     }
                 }
+                
+                if let errorMessage = viewModel.errorMessage {
+                    Section {
+                        Text(errorMessage)
+                            .foregroundColor(.red)
+                    }
+                }
             }
             .navigationTitle("New Habit")
             .navigationBarTitleDisplayMode(.inline)
@@ -39,29 +48,39 @@ struct AddHabitView: View {
                     Button("Cancel") {
                         dismiss()
                     }
+                    .disabled(isSaving)
                 }
                 ToolbarItem(placement: .topBarTrailing) {
                     Button("Save") {
-                        saveHabit()
+                        Task {
+                            await saveHabit()
+                        }
                     }
-                    .disabled(name.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
+                    .disabled(isSaveDisabled)
                 }
             }
         }
     }
     
-    private func saveHabit() {
-        let trimmedName = name.trimmingCharacters(in: .whitespacesAndNewlines)
-        let trimmedCategory = category.trimmingCharacters(in: .whitespacesAndNewlines)
-        let habit = Habit(
-            name: trimmedName,
-            category: trimmedCategory.isEmpty ? "General" : trimmedCategory,
-            frequency: frequency)
-        modelContext.insert(habit)
-        dismiss()
+    private var isSaveDisabled: Bool {
+        isSaving || name.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+    }
+    
+    private func saveHabit() async {
+        isSaving = true
+        let didSave = await viewModel.addHabit(
+            name: name,
+            category: category,
+            frequency: frequency
+        )
+        isSaving = false
+        
+        if didSave {
+            dismiss()
+        }
     }
 }
 
 #Preview {
-    AddHabitView()
+//    AddHabitView()
 }

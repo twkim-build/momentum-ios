@@ -9,47 +9,94 @@ import SwiftUI
 import SwiftData
 
 struct HabitListView: View {
-    @Query(sort: \Habit.createdAt, order: .reverse) private var habits: [Habit]
     @Environment(\.modelContext) private var modelContext
     @State private var isShowingAddHabit: Bool = false
+    @State private var viewModel: HabitListViewModel?
     
     var body: some View {
         NavigationStack {
-            List {
-                ForEach(habits) { habit in
-                    NavigationLink {
-                        HabitDetailView(habit: habit)
-                    } label: {
-                        VStack(alignment: .leading, spacing: 4) {
-                            Text(habit.name)
-                                .font(.headline)
-                            Text(habit.category)
-                                .font(.subheadline)
-                                .foregroundStyle(.secondary)
-                        }
-                    }
+            Group {
+                if let viewModel {
+                    contentView(viewModel)
+                } else {
+                    ProgressView("Preparing habits...")
                 }
-                .onDelete(perform: deleteHabits)
             }
             .navigationTitle("Habits")
             .toolbar {
-                ToolbarItem(placement: .topBarTrailing) {
-                    Button {
-                        isShowingAddHabit = true
-                    } label: {
-                        Image(systemName: "plus")
+                if viewModel != nil {
+                    ToolbarItem(placement: .topBarTrailing) {
+                        Button {
+                            isShowingAddHabit = true
+                        } label: {
+                            Image(systemName: "plus")
+                        }
                     }
                 }
             }
             .sheet(isPresented: $isShowingAddHabit) {
-                AddHabitView()
+                if let viewModel {
+                    AddHabitView(viewModel: viewModel)
+                }
+            }
+        }
+        .task {
+            if viewModel == nil {
+                let repository = SwiftDataHabitRepository(modelContext: modelContext)
+                viewModel = HabitListViewModel(repository: repository)
+            }
+            
+            if let viewModel, viewModel.habits.isEmpty, !viewModel.isLoading {
+                await viewModel.loadHabits()
             }
         }
     }
     
-    private func deleteHabits(at offsets: IndexSet) {
-        for index in offsets {
-            modelContext.delete(habits[index])
+    @ViewBuilder
+    private func contentView(_ viewModel: HabitListViewModel) -> some View {
+        if viewModel.isLoading && viewModel.habits.isEmpty {
+            ProgressView("Loading habits...")
+        } else if let errorMessage = viewModel.errorMessage, viewModel.habits.isEmpty {
+            ContentUnavailableView(
+                "Somthing went wrong",
+                systemImage: "exclamationmark.triangle",
+                description: Text(errorMessage)
+            )
+        } else if viewModel.isEmpty {
+            ContentUnavailableView(
+                "No Habits Yet",
+                systemImage: "checklist",
+                description: Text("Tap + to create your first habit.")
+            )
+        } else {
+            List {
+                ForEach(viewModel.habits) { habit in
+                    NavigationLink {
+                        HabitDetailView(habit: habit)
+                    } label: {
+                        HabitRowView(habit: habit)
+                    }
+                }
+                .onDelete { offsets in
+                    Task {
+                        await viewModel.deleteHabits(at: offsets)
+                    }
+                }
+            }
+            .overlay(alignment: .bottom) {
+                if let errorMessage = viewModel.errorMessage, !viewModel.habits.isEmpty {
+                    Text(errorMessage)
+                        .font(.footnote)
+                        .padding(.horizontal, 12)
+                        .padding(.vertical, 8)
+                        .background(.ultraThinMaterial)
+                        .clipShape(Capsule())
+                        .padding(.bottom, 8)
+                }
+            }
+            .refreshable {
+                await viewModel.loadHabits()
+            }
         }
     }
 }
