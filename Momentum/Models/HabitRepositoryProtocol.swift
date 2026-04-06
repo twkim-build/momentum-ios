@@ -9,4 +9,6 @@ import Foundation
 
 protocol HabitRepositoryProtocol {
     func fetchHabits() async throws -> [Habit]
+    func addHabit(name: String, category: String, frequency: String) async throws
+    func deleteHabit(_ habit: Habit) async throws
 }

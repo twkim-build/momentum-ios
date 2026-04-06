@@ -13,6 +13,7 @@ enum HabitFilter: Equatable {
     case category(String)
 }
 
+@MainActor
 @Observable
 final class HabitListViewModel {
     private let repository: HabitRepositoryProtocol
@@ -26,15 +27,10 @@ final class HabitListViewModel {
         self.repository = repository
     }
     
-    func filterHabits() -> [Habit] {
-        switch selectedFilter {
-        case .all:
-            return habits
-        case .category(let category):
-            return habits.filter{ $0.category == category }
-        }
+    var isEmpty: Bool {
+        !isLoading && habits.isEmpty && errorMessage == nil
     }
-
+    
     func loadHabits() async {
         isLoading = true
         errorMessage = nil
@@ -48,4 +44,45 @@ final class HabitListViewModel {
         
         isLoading = false
     }
+    
+    func addHabit(name: String, category: String, frequency: String) async -> Bool {
+        errorMessage = nil
+        
+        do {
+            try await repository.addHabit(
+                name: name,
+                category: category,
+                frequency: frequency
+            )
+            await loadHabits()
+            return true
+        } catch {
+            errorMessage = "Failed to save habit."
+            return false
+        }
+    }
+    
+    func deleteHabits(at offsets: IndexSet) async {
+        errorMessage = nil
+        
+        do {
+            for index in offsets {
+                let habit = habits[index]
+                try await repository.deleteHabit(habit)
+            }
+            await loadHabits()
+        } catch {
+            errorMessage = "Failed to delete habit."
+        }
+    }
+    
+    func filterHabits() -> [Habit] {
+        switch selectedFilter {
+        case .all:
+            return habits
+        case .category(let category):
+            return habits.filter{ $0.category == category }
+        }
+    }
+
 }
