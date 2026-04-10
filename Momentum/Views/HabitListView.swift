@@ -10,6 +10,7 @@ import SwiftData
 
 struct HabitListView: View {
     @Environment(\.modelContext) private var modelContext
+    @State private var repository: SwiftDataHabitRepository?
     @State private var isShowingAddHabit: Bool = false
     @State private var viewModel: HabitListViewModel?
     
@@ -41,8 +42,11 @@ struct HabitListView: View {
             }
         }
         .task {
-            if viewModel == nil {
-                let repository = SwiftDataHabitRepository(modelContext: modelContext)
+            if repository == nil {
+                repository = SwiftDataHabitRepository(modelContext: modelContext)
+            }
+            
+            if viewModel == nil, let repository {
                 viewModel = HabitListViewModel(repository: repository)
             }
             
@@ -72,7 +76,10 @@ struct HabitListView: View {
             List {
                 ForEach(viewModel.habits) { habit in
                     NavigationLink {
-                        HabitDetailView(habit: habit)
+                        if let repository {
+                            let detailViewModel = HabitDetailViewModel(habitID: habit.id, repository: repository)
+                            HabitDetailView(viewModel: detailViewModel)
+                        }
                     } label: {
                         HabitRowView(habit: habit)
                     }
