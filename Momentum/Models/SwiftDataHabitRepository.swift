@@ -35,8 +35,14 @@ final class SwiftDataHabitRepository: HabitRepositoryProtocol {
         try modelContext.save()
     }
     
-    func deleteHabit(_ habit: Habit) async throws {
-        modelContext.delete(habit)
-        try modelContext.save()
+    func deleteHabit(id: UUID) async throws {
+        let descriptor = FetchDescriptor<Habit>(
+            predicate: #Predicate { $0.id == id }
+        )
+        
+        if let habit = try modelContext.fetch(descriptor).first {
+            modelContext.delete(habit)
+            try modelContext.save()
+        }
     }
 }

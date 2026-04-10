@@ -68,7 +68,7 @@ final class HabitListViewModel {
         do {
             for index in offsets {
                 let habit = habits[index]
-                try await repository.deleteHabit(habit)
+                try await repository.deleteHabit(id: habit.id)
             }
             await loadHabits()
         } catch {
