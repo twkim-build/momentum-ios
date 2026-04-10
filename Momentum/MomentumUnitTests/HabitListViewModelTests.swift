@@ -9,6 +9,7 @@ import Foundation
 import Testing
 @testable import Momentum
 
+@MainActor
 struct HabitListViewModelTests {
 
     @Test
