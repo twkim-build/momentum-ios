@@ -32,7 +32,7 @@ struct HabitListViewModelTests {
     @Test
     func loadHabits_failure_setsErrorMessage() async {
         let mockRepository = MockHabitRepository()
-        mockRepository.errorToThrow = MockError.sample
+        mockRepository.fetchHabitError = MockRepositoryError.sample
         
         let viewModel = HabitListViewModel(repository: mockRepository)
         await viewModel.loadHabits()
