@@ -79,6 +79,11 @@ struct HabitListView: View {
                         if let repository {
                             let detailViewModel = HabitDetailViewModel(habitID: habit.id, repository: repository)
                             HabitDetailView(viewModel: detailViewModel)
+                                .onDisappear {
+                                    Task {
+                                        await viewModel.loadHabits()
+                                    }
+                                }
                         }
                     } label: {
                         HabitRowView(habit: habit)

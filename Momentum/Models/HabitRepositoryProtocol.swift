@@ -8,10 +8,10 @@
 import Foundation
 
 protocol HabitRepositoryProtocol {
-    func fetchHabits() async throws -> [Habit]
+    func fetchHabits() async throws -> [HabitItem]
     func addHabit(name: String, category: String, frequency: String) async throws
     func deleteHabit(id: UUID) async throws
     
-    func fetchHabit(id: UUID) async throws -> Habit?
+    func fetchHabitDetail(id: UUID) async throws -> HabitDetailItem?
     func toggleTodayCompletion(for habitID: UUID) async throws
 }
