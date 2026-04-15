@@ -16,11 +16,12 @@ final class SwiftDataHabitRepository: HabitRepositoryProtocol {
         self.modelContext = modelContext
     }
     
-    func fetchHabits() async throws -> [Habit] {
+    func fetchHabits() async throws -> [HabitItem] {
         let descriptor = FetchDescriptor<Habit>(
             sortBy: [SortDescriptor(\.createdAt, order: .reverse)]
         )
-        return try modelContext.fetch(descriptor)
+        let habits = try modelContext.fetch(descriptor)
+        return habits.map(HabitMapper.toHabitItem)
     }
     
     func addHabit(name: String, category: String, frequency: String) async throws {
@@ -48,13 +49,18 @@ final class SwiftDataHabitRepository: HabitRepositoryProtocol {
         }
     }
     
-    func fetchHabit(id: UUID) async throws -> Habit? {
+    func fetchHabitDetail(id: UUID) async throws -> HabitDetailItem? {
         let descriptor = FetchDescriptor<Habit>(
             predicate: #Predicate<Habit> { habit in
                 habit.id == id
             }
         )
-        return try modelContext.fetch(descriptor).first
+        
+        guard let habit = try modelContext.fetch(descriptor).first else {
+            return nil
+        }
+        
+        return HabitMapper.toHabitDetailItem(from: habit)
     }
     
     func toggleTodayCompletion(for habitID: UUID) async throws {

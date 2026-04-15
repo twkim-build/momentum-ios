@@ -14,7 +14,7 @@ final class HabitDetailViewModel {
     private let repository: HabitRepositoryProtocol
     private let habitID: UUID
     
-    private(set) var habit: Habit?
+    private(set) var habit: HabitDetailItem?
     private(set) var isLoading = false
     private(set) var isUpdating = false
     private(set) var errorMessage: String?
@@ -36,24 +36,16 @@ final class HabitDetailViewModel {
         habit?.frequency ?? "-"
     }
     
-    var sortedCompletions: [HabitCompletion] {
-        guard let habit else { return [] }
-        return habit.completions.sorted { $0.date > $1.date }
+    var sortedCompletions: [HabitDetailItem.CompletionItem] {
+        return habit?.completions ?? []
     }
     
     var isCompletedToday: Bool {
-        guard let habit else { return false }
-        
-        let calendar = Calendar.current
-        return habit.completions.contains {
-            calendar.isDateInToday($0.date)
-        }
+        habit?.isCompletedToday ?? false
     }
     
     var currentStreak: Int {
-        guard let habit else { return 0 }
-        return StreakCalculator.calculateCurrentStreak(from: habit.completions.map(\.date))
-        
+        habit?.currentStreak ?? 0
     }
     
     func loadHabit() async {
@@ -61,7 +53,7 @@ final class HabitDetailViewModel {
         errorMessage = nil
         
         do {
-            habit = try await repository.fetchHabit(id: habitID)
+            habit = try await repository.fetchHabitDetail(id: habitID)
             if habit == nil {
                 errorMessage = "Habit not found."
             }
@@ -80,7 +72,7 @@ final class HabitDetailViewModel {
      
         do {
             try await repository.toggleTodayCompletion(for: habitID)
-            habit = try await repository.fetchHabit(id: habitID)
+            habit = try await repository.fetchHabitDetail(id: habitID)
         } catch {
             errorMessage = "Failed to update habit."
         }

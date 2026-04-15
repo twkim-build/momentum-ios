@@ -16,8 +16,8 @@ struct HabitListViewModelTests {
     func loadHabits_success_updatesHabits() async {
         let mockRepository = MockHabitRepository()
         mockRepository.habitsToReturn = [
-            Habit(name: "Workout", category: "Health", frequency: "Daily"),
-            Habit(name: "Read", category: "Learning", frequency: "Daily")
+            HabitMapper.toHabitItem(from: Habit(name: "Workout", category: "Health", frequency: "Daily")),
+            HabitMapper.toHabitItem(from: Habit(name: "Read", category: "Learning", frequency: "Daily"))
         ]
         
         let viewModel = HabitListViewModel(repository: mockRepository)
@@ -32,7 +32,7 @@ struct HabitListViewModelTests {
     @Test
     func loadHabits_failure_setsErrorMessage() async {
         let mockRepository = MockHabitRepository()
-        mockRepository.fetchHabitError = MockRepositoryError.sample
+        mockRepository.errorToThrow = MockRepositoryError.sample
         
         let viewModel = HabitListViewModel(repository: mockRepository)
         await viewModel.loadHabits()
@@ -46,8 +46,8 @@ struct HabitListViewModelTests {
     func filteredHabits_all_returnsAllHabits() async {
         let mockRepository = MockHabitRepository()
         mockRepository.habitsToReturn = [
-            Habit(name: "Workout", category: "Health", frequency: "Daily"),
-            Habit(name: "Read", category: "Learning", frequency: "Daily")
+            HabitMapper.toHabitItem(from: Habit(name: "Workout", category: "Health", frequency: "Daily")),
+            HabitMapper.toHabitItem(from: Habit(name: "Read", category: "Learning", frequency: "Daily"))
         ]
         
         let viewModel = HabitListViewModel(repository: mockRepository)
@@ -62,9 +62,9 @@ struct HabitListViewModelTests {
     func filteredHabits_categoty_returnsOnlyMatchingHabits() async {
         let mockRepository = MockHabitRepository()
         mockRepository.habitsToReturn = [
-            Habit(name: "Workout", category: "Health", frequency: "Daily"),
-            Habit(name: "Read", category: "Learning", frequency: "Daily"),
-            Habit(name: "Run", category: "Health", frequency: "Weekly")
+            HabitMapper.toHabitItem(from: Habit(name: "Workout", category: "Health", frequency: "Daily")),
+            HabitMapper.toHabitItem(from: Habit(name: "Read", category: "Learning", frequency: "Daily")),
+            HabitMapper.toHabitItem(from: Habit(name: "Run", category: "Health", frequency: "Weekly"))
         ]
         
         let viewModel = HabitListViewModel(repository: mockRepository)

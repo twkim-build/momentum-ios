@@ -8,7 +8,7 @@
 import SwiftUI
 
 struct HabitRowView: View {
-    let habit: Habit
+    let habit: HabitItem
     
     var body: some View {
         VStack(alignment: .leading, spacing: 6) {
@@ -17,7 +17,7 @@ struct HabitRowView: View {
                     .font(.headline)
                 Spacer()
                 
-                if isCompletedToday {
+                if habit.isCompletedToday {
                     Text("Done Today")
                         .font(.caption)
                         .padding(.horizontal, 8)
@@ -33,22 +33,11 @@ struct HabitRowView: View {
                     .font(.subheadline)
                     .foregroundStyle(.secondary)
                 Spacer()
-                Text("Streak: \(currentStreak)")
+                Text("Streak: \(habit.currentStreak)")
                     .font(.subheadline)
                     .foregroundStyle(.secondary)
             }
         }
         .padding(.vertical, 4)
-    }
-    
-    private var isCompletedToday: Bool {
-        let calendar = Calendar.current
-        return habit.completions.contains {
-            calendar.isDateInToday($0.date)
-        }
-    }
-    
-    private var currentStreak: Int {
-        StreakCalculator.calculateCurrentStreak(from: habit.completions.map(\.date))
     }
 }

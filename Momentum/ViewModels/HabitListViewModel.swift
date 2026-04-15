@@ -18,7 +18,7 @@ enum HabitFilter: Equatable {
 final class HabitListViewModel {
     private let repository: HabitRepositoryProtocol
     
-    private(set) var habits: [Habit] = []
+    private(set) var habits: [HabitItem] = []
     private(set) var isLoading = false
     private(set) var errorMessage: String?
     var selectedFilter: HabitFilter = .all
@@ -76,7 +76,7 @@ final class HabitListViewModel {
         }
     }
     
-    func filterHabits() -> [Habit] {
+    func filterHabits() -> [HabitItem] {
         switch selectedFilter {
         case .all:
             return habits
