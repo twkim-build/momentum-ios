@@ -60,13 +60,13 @@ struct HabitListView: View {
     private func contentView(_ viewModel: HabitListViewModel) -> some View {
         if viewModel.isLoading && viewModel.habits.isEmpty {
             ProgressView("Loading habits...")
-        } else if let errorMessage = viewModel.errorMessage, viewModel.habits.isEmpty {
+        } else if let errorMessage = viewModel.errorMessage {
             ContentUnavailableView(
                 "Somthing went wrong",
                 systemImage: "exclamationmark.triangle",
                 description: Text(errorMessage)
             )
-        } else if viewModel.isEmpty {
+        } else if viewModel.shouldShowEmptyState {
             ContentUnavailableView(
                 "No Habits Yet",
                 systemImage: "checklist",
