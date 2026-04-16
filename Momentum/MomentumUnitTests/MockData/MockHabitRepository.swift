@@ -14,10 +14,21 @@ final class MockHabitRepository: HabitRepositoryProtocol {
     var habitDetailToReturn: HabitDetailItem?
     var errorToThrow: Error?
     
+    var addHabitCallCount = 0
+    var deleteHabitCallCount = 0
+    var fetchHabitsCallCount = 0
+    
     var toggleTodayCompletionCallCount = 0
     var lastToggledHabitID: UUID?
     
+    var lastAddedHabitName: String?
+    var lastAddedHabitCategory: String?
+    var lastAddedHabitFrequency: String?
+    var deletedHabitIDs: [UUID] = []
+    
     func fetchHabits() async throws -> [HabitItem] {
+        fetchHabitsCallCount += 1
+        
         if let errorToThrow {
             throw errorToThrow
         }
@@ -25,26 +36,26 @@ final class MockHabitRepository: HabitRepositoryProtocol {
     }
 
     func addHabit(name: String, category: String, frequency: String) async throws {
+        addHabitCallCount += 1
+        
         if let errorToThrow {
             throw errorToThrow
         }
         
-        #if false
-        let habit = Habit(name: name, category: category, frequency: frequency)
-        habits.append(habit)
-        habitsToReturn.append(HabitMapper.toHabitItem(from: habit))
-        #endif
+        lastAddedHabitName = name
+        lastAddedHabitCategory = category
+        lastAddedHabitFrequency = frequency
     }
     
     func deleteHabit(id: UUID) async throws {
+        deleteHabitCallCount += 1
+        
         if let errorToThrow {
             throw errorToThrow
         }
-        
-        #if false
-        habits.removeAll { $0.id == id }
+     
+        deletedHabitIDs.append(id)
         habitsToReturn.removeAll { $0.id == id }
-        #endif
     }
     
     func fetchHabitDetail(id: UUID) async throws -> HabitDetailItem? {
@@ -52,25 +63,17 @@ final class MockHabitRepository: HabitRepositoryProtocol {
             throw errorToThrow
         }
         return habitDetailToReturn
-        
-        #if false
-        guard let habit = habits.first(where: { $0.id == id }) else {
-            return nil
-        }
-        return HabitMapper.toHabitDetailItem(from: habit)
-        #endif
     }
     
     func toggleTodayCompletion(for habitID: UUID) async throws {
+        toggleTodayCompletionCallCount += 1
+        lastToggledHabitID = habitID
+
         if let errorToThrow {
             throw errorToThrow
         }
         
-        toggleTodayCompletionCallCount += 1
-        lastToggledHabitID = habitID
-        
         guard let current = habitDetailToReturn else { return }
-        
         let calendar = Calendar.current
         
         if current.isCompletedToday {

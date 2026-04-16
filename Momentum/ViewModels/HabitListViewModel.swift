@@ -27,7 +27,7 @@ final class HabitListViewModel {
         self.repository = repository
     }
     
-    var isEmpty: Bool {
+    var shouldShowEmptyState: Bool {
         !isLoading && habits.isEmpty && errorMessage == nil
     }
     
