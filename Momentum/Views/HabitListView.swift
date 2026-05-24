@@ -5,15 +5,15 @@
 //  Created by taewoo kim on 31.03.26.
 //
 
-import SwiftUI
 import SwiftData
+import SwiftUI
 
 struct HabitListView: View {
     @Environment(\.modelContext) private var modelContext
     @State private var repository: SwiftDataHabitRepository?
     @State private var isShowingAddHabit: Bool = false
     @State private var viewModel: HabitListViewModel?
-    
+
     var body: some View {
         NavigationStack {
             Group {
@@ -45,24 +45,24 @@ struct HabitListView: View {
             if repository == nil {
                 repository = SwiftDataHabitRepository(modelContext: modelContext)
             }
-            
+
             if viewModel == nil, let repository {
                 viewModel = HabitListViewModel(repository: repository)
             }
-            
+
             if let viewModel, viewModel.habits.isEmpty, !viewModel.isLoading {
                 await viewModel.loadHabits()
             }
         }
     }
-    
+
     @ViewBuilder
     private func contentView(_ viewModel: HabitListViewModel) -> some View {
         if viewModel.isLoading && viewModel.habits.isEmpty {
             ProgressView("Loading habits...")
         } else if let errorMessage = viewModel.errorMessage {
             ContentUnavailableView(
-                "Somthing went wrong",
+                "Something went wrong",
                 systemImage: "exclamationmark.triangle",
                 description: Text(errorMessage)
             )
