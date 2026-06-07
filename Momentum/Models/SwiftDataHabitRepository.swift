@@ -11,11 +11,11 @@ import SwiftData
 @MainActor
 final class SwiftDataHabitRepository: HabitRepositoryProtocol {
     private let modelContext: ModelContext
-    
+
     init(modelContext: ModelContext) {
         self.modelContext = modelContext
     }
-    
+
     func fetchHabits() async throws -> [HabitItem] {
         let descriptor = FetchDescriptor<Habit>(
             sortBy: [SortDescriptor(\.createdAt, order: .reverse)]
@@ -23,7 +23,7 @@ final class SwiftDataHabitRepository: HabitRepositoryProtocol {
         let habits = try modelContext.fetch(descriptor)
         return habits.map(HabitMapper.toHabitItem)
     }
-    
+
     func addHabit(name: String, category: String, frequency: String) async throws {
         let trimmedName = name.trimmingCharacters(in: .whitespacesAndNewlines)
         let trimmedCategory = category.trimmingCharacters(in: .whitespacesAndNewlines)
@@ -35,50 +35,76 @@ final class SwiftDataHabitRepository: HabitRepositoryProtocol {
         modelContext.insert(habit)
         try modelContext.save()
     }
-    
+
     func deleteHabit(id: UUID) async throws {
         let descriptor = FetchDescriptor<Habit>(
             predicate: #Predicate<Habit> { habit in
                 habit.id == id
             }
         )
-        
+
         if let habit = try modelContext.fetch(descriptor).first {
             modelContext.delete(habit)
             try modelContext.save()
         }
     }
-    
+
     func fetchHabitDetail(id: UUID) async throws -> HabitDetailItem? {
         let descriptor = FetchDescriptor<Habit>(
             predicate: #Predicate<Habit> { habit in
                 habit.id == id
             }
         )
-        
+
         guard let habit = try modelContext.fetch(descriptor).first else {
             return nil
         }
-        
+
         return HabitMapper.toHabitDetailItem(from: habit)
     }
-    
+
+    func updateHabit(
+        id: UUID,
+        name: String,
+        category: String,
+        frequency: String
+    ) async throws {
+        let descriptor = FetchDescriptor<Habit>(
+            predicate: #Predicate<Habit> { habit in
+                habit.id == id
+            }
+        )
+
+        guard let habit = try modelContext.fetch(descriptor).first else {
+            return
+        }
+
+        let trimmedName = name.trimmingCharacters(in: .whitespacesAndNewlines)
+        let trimmedCategory = category.trimmingCharacters(in: .whitespacesAndNewlines)
+
+        habit.name = trimmedName
+        habit.category = trimmedCategory.isEmpty ? "General" : trimmedCategory
+        habit.frequency = frequency
+
+        try modelContext.save()
+    }
+
     func toggleTodayCompletion(for habitID: UUID) async throws {
         let habitDescriptor = FetchDescriptor<Habit>(
             predicate: #Predicate<Habit> { habit in
                 habit.id == habitID
             }
         )
-        
+
         guard let habit = try modelContext.fetch(habitDescriptor).first else {
             return
         }
-        
+
         let calendar = Calendar.current
         let existingCompletion = habit.completions.first(where: { completion in
             calendar.isDateInToday(completion.date)
         })
-        
+
         if let existingCompletion {
             modelContext.delete(existingCompletion)
         } else {
@@ -86,7 +112,7 @@ final class SwiftDataHabitRepository: HabitRepositoryProtocol {
             modelContext.insert(completion)
             habit.completions.append(completion)
         }
-        
+
         try modelContext.save()
     }
 }

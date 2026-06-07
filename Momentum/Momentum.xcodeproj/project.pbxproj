@@ -21,6 +21,16 @@
 		3A2C37252F7BFD500034355E /* Momentum.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Momentum.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
+/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		3A6B85682FD5879600311AB3 /* Exceptions for "Views" folder in "MomentumUnitTests" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				EditHabitView.swift,
+			);
+			target = 3A01F1692F7FFC290010B42F /* MomentumUnitTests */;
+		};
+/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
+
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		3A01F16B2F7FFC290010B42F /* MomentumUnitTests */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
@@ -34,6 +44,9 @@
 		};
 		3A2C37362F7C010C0034355E /* Views */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				3A6B85682FD5879600311AB3 /* Exceptions for "Views" folder in "MomentumUnitTests" target */,
+			);
 			path = Views;
 			sourceTree = "<group>";
 		};
