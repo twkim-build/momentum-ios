@@ -13,22 +13,28 @@ final class MockHabitRepository: HabitRepositoryProtocol {
     var habitsToReturn: [HabitItem] = []
     var habitDetailToReturn: HabitDetailItem?
     var errorToThrow: Error?
-    
+
     var addHabitCallCount = 0
     var deleteHabitCallCount = 0
     var fetchHabitsCallCount = 0
-    
+
     var toggleTodayCompletionCallCount = 0
     var lastToggledHabitID: UUID?
-    
+
     var lastAddedHabitName: String?
     var lastAddedHabitCategory: String?
     var lastAddedHabitFrequency: String?
     var deletedHabitIDs: [UUID] = []
-    
+
+    var updateHabitCallCount = 0
+    var lastUpdatedHabitID: UUID?
+    var lastUpdateName: String?
+    var lastUpdatedCategory: String?
+    var lastUpdatedFrequency: String?
+
     func fetchHabits() async throws -> [HabitItem] {
         fetchHabitsCallCount += 1
-        
+
         if let errorToThrow {
             throw errorToThrow
         }
@@ -37,34 +43,52 @@ final class MockHabitRepository: HabitRepositoryProtocol {
 
     func addHabit(name: String, category: String, frequency: String) async throws {
         addHabitCallCount += 1
-        
+
         if let errorToThrow {
             throw errorToThrow
         }
-        
+
         lastAddedHabitName = name
         lastAddedHabitCategory = category
         lastAddedHabitFrequency = frequency
     }
-    
-    func deleteHabit(id: UUID) async throws {
-        deleteHabitCallCount += 1
-        
+
+    func updateHabit(
+        id: UUID,
+        name: String,
+        category: String,
+        frequency: String
+    ) async throws {
+        updateHabitCallCount += 1
+
         if let errorToThrow {
             throw errorToThrow
         }
-     
+
+        lastUpdatedHabitID = id
+        lastUpdatedName = name
+        lastUpdatedCategory = category
+        lastUpdatedFrequency = frequency
+    }
+
+    func deleteHabit(id: UUID) async throws {
+        deleteHabitCallCount += 1
+
+        if let errorToThrow {
+            throw errorToThrow
+        }
+
         deletedHabitIDs.append(id)
         habitsToReturn.removeAll { $0.id == id }
     }
-    
-    func fetchHabitDetail(id: UUID) async throws -> HabitDetailItem? {
+
+    func fetchHabitDetail(id _: UUID) async throws -> HabitDetailItem? {
         if let errorToThrow {
             throw errorToThrow
         }
         return habitDetailToReturn
     }
-    
+
     func toggleTodayCompletion(for habitID: UUID) async throws {
         toggleTodayCompletionCallCount += 1
         lastToggledHabitID = habitID
@@ -72,10 +96,10 @@ final class MockHabitRepository: HabitRepositoryProtocol {
         if let errorToThrow {
             throw errorToThrow
         }
-        
+
         guard let current = habitDetailToReturn else { return }
         let calendar = Calendar.current
-        
+
         if current.isCompletedToday {
             let filteredCompletions = current.completions.filter {
                 !calendar.isDateInToday($0.date)
@@ -114,4 +138,3 @@ final class MockHabitRepository: HabitRepositoryProtocol {
 enum MockRepositoryError: Error {
     case sample
 }
-

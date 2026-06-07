@@ -11,7 +11,8 @@ protocol HabitRepositoryProtocol {
     func fetchHabits() async throws -> [HabitItem]
     func addHabit(name: String, category: String, frequency: String) async throws
     func deleteHabit(id: UUID) async throws
-    
+
     func fetchHabitDetail(id: UUID) async throws -> HabitDetailItem?
+    func updateHabit(id: UUID, name: String, category: String, frequency: String) async throws
     func toggleTodayCompletion(for habitID: UUID) async throws
 }

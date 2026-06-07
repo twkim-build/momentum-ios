@@ -5,16 +5,17 @@
 //  Created by taewoo kim on 31.03.26.
 //
 
-import SwiftUI
 import SwiftData
+import SwiftUI
 
 struct HabitDetailView: View {
     @State private var viewModel: HabitDetailViewModel
-    
+    @State private var isShowingEditHabit = false
+
     init(viewModel: HabitDetailViewModel) {
         _viewModel = State(initialValue: viewModel)
     }
-    
+
     var body: some View {
         List {
             if viewModel.isLoading && viewModel.habit == nil {
@@ -32,7 +33,7 @@ struct HabitDetailView: View {
                     LabeledContent("Frequency", value: viewModel.frequencyText)
                     LabeledContent("Current Streak", value: "\(viewModel.currentStreak)")
                 }
-                
+
                 Section("Today") {
                     Button(viewModel.isCompletedToday ? "Undo Today" : "Mark Done Today") {
                         Task {
@@ -40,12 +41,12 @@ struct HabitDetailView: View {
                         }
                     }
                     .disabled(viewModel.isUpdating)
-                    
+
                     if viewModel.isUpdating {
                         ProgressView()
                     }
                 }
-                
+
                 Section("Completion History") {
                     if viewModel.sortedCompletions.isEmpty {
                         Text("No completions yet")
@@ -56,7 +57,7 @@ struct HabitDetailView: View {
                         }
                     }
                 }
-                
+
                 if let errorMessage = viewModel.errorMessage {
                     Section {
                         Text(errorMessage)
@@ -67,6 +68,29 @@ struct HabitDetailView: View {
         }
         .navigationTitle(viewModel.title)
         .navigationBarTitleDisplayMode(.inline)
+        .toolbar {
+            ToolbarItem(placement: .topBarTrailing) {
+                Button("Edit") {
+                    isShowingEditHabit = true
+                }
+                .disabled(viewModel.habit == nil)
+            }
+        }
+        .sheet(isPresented: $isShowingEditHabit) {
+            if let habit = viewModel.habit {
+                EditHabitView(
+                    viewModel: EditHabitViewModel(
+                        habit: habit,
+                        repository: viewModel.repository
+                    ),
+                    onHabitUpdated: {
+                        Task {
+                            await viewModel.loadHabit()
+                        }
+                    }
+                )
+            }
+        }
         .task {
             if viewModel.habit == nil && !viewModel.isLoading {
                 await viewModel.loadHabit()
@@ -78,5 +102,4 @@ struct HabitDetailView: View {
     }
 }
 
-#Preview {
-}
+#Preview {}
